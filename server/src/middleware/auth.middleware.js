@@ -1,26 +1,23 @@
+require("dotenv").config({ path: require('path').resolve(__dirname, '../../.env') });
 const jwt = require("jsonwebtoken");
 
 const protect = (req, res, next) => {
-  // Get token from request header
-  // Header looks like: Authorization: "Bearer eyJhbGci..."
   const token = req.headers.authorization?.split(" ")[1];
 
-  // If no token found, send error
+  console.log("Token:", token);
+  console.log("Secret:", process.env.JWT_SECRET);
+
   if (!token) {
     return res.status(401).json({ message: "Login karo pehle" });
   }
 
   try {
-    // Verify token using secret key
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-
-    // Save user id in request object for next function
     req.user = decoded;
-
-    // Move to next function
     next();
   } catch (error) {
-    return res.status(401).json({ message: "Token invalid hai" });
+    console.log("Error:", error.message);
+    return res.status(401).json({ message: "Token is invalid " });
   }
 };
 
