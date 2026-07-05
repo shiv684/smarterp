@@ -3,26 +3,27 @@ const express = require("express");
 const cors = require("cors");
 require("./config/db");
 
-// Import routes
 const authRoutes = require("./routes/auth.routes");
 const companyRoutes = require("./routes/company.routes");
-const customerRoutes = require("./routes/customer.routes"); // New
-const supplierRoutes = require("./routes/supplier.routes"); // New
-const itemRoutes = require("./routes/item.routes");         // New
+const customerRoutes = require("./routes/customer.routes");
+const supplierRoutes = require("./routes/supplier.routes");
+const itemRoutes = require("./routes/item.routes");
+const salesRoutes = require("./routes/sales.routes");
+const purchaseRoutes = require("./routes/purchase.routes");
 
 const app = express();
 
 app.use(cors());
 app.use(express.json());
 
-// Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/companies", companyRoutes);
-app.use("/api/customers", customerRoutes); // New
-app.use("/api/suppliers", supplierRoutes); // New
-app.use("/api/items", itemRoutes);         // New
+app.use("/api/customers", customerRoutes);
+app.use("/api/suppliers", supplierRoutes);
+app.use("/api/items", itemRoutes);
+app.use("/api/sales", salesRoutes);
+app.use("/api/purchases", purchaseRoutes);
 
-// Test route
 app.get("/", (req, res) => {
   res.json({ message: "SmartERP Server Running ✅" });
 });
