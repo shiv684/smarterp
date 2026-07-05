@@ -27,9 +27,10 @@ export default function Sidebar() {
         { label: "Sales Report", path: "/dashboard/reports/sales" },
         { label: "Purchase Report", path: "/dashboard/reports/purchase" },
         { label: "Stock Report", path: "/dashboard/reports/stock" },
+        { label: "Profit & Loss", path: "/dashboard/reports/profit-loss" },
       ],
     },
-  ];
+  ]; // ← Ye closing bracket missing tha
 
   return (
     <div className="w-56 min-h-screen bg-white shadow-md flex flex-col">
