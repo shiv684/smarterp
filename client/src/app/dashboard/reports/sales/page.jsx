@@ -95,9 +95,74 @@ export default function SalesReportPage() {
                 </tr>
               ))}
             </tbody>
+            <thead className="bg-gray-50">
+  <tr>
+    <th className="px-4 py-3 text-left text-sm font-medium text-gray-600">Invoice No</th>
+    <th className="px-4 py-3 text-left text-sm font-medium text-gray-600">Customer</th>
+    <th className="px-4 py-3 text-left text-sm font-medium text-gray-600">Date</th>
+    <th className="px-4 py-3 text-left text-sm font-medium text-gray-600">Amount</th>
+    <th className="px-4 py-3 text-left text-sm font-medium text-gray-600">Payment</th>
+    <th className="px-4 py-3 text-left text-sm font-medium text-gray-600">Actions</th>
+  </tr>
+</thead>
+<tbody>
+  {vouchers.map((voucher) => (
+    <tr key={voucher.id} className="border-t hover:bg-gray-50">
+      <td className="px-4 py-3 text-sm font-medium text-blue-600">{voucher.invoice_no}</td>
+      <td className="px-4 py-3 text-sm">{voucher.customer_name}</td>
+      <td className="px-4 py-3 text-sm">{new Date(voucher.date).toLocaleDateString()}</td>
+      <td className="px-4 py-3 text-sm font-medium">₹{voucher.total_amount}</td>
+      <td className="px-4 py-3 text-sm">
+        <span className={`px-2 py-1 rounded text-xs ${
+          voucher.payment_type === "cash"
+            ? "bg-green-100 text-green-700"
+            : "bg-yellow-100 text-yellow-700"
+        }`}>
+          {voucher.payment_type}
+        </span>
+      </td>
+      <td className="px-4 py-3 text-sm">
+        <button
+          onClick={() => downloadInvoice(voucher.id)}
+          className="bg-blue-600 text-white px-3 py-1 rounded text-xs hover:bg-blue-700"
+        >
+          Download PDF
+        </button>
+      </td>
+    </tr>
+  ))}
+</tbody>
           </table>
         </div>
       )}
     </DashboardLayout>
   );
+  // Download invoice function
+const downloadInvoice = async (voucherId) => {
+  try {
+    const company = JSON.parse(localStorage.getItem("selectedCompany"));
+    const token = localStorage.getItem("token");
+
+    const response = await fetch(
+      `http://localhost:5000/api/invoice/${voucherId}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "company-id": company.id,
+        },
+      }
+    );
+
+    // Convert to blob and download
+    const blob = await response.blob();
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `invoice-${voucherId}.pdf`;
+    a.click();
+    window.URL.revokeObjectURL(url);
+  } catch (err) {
+    console.error(err);
+  }
+};
 }

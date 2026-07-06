@@ -13,7 +13,6 @@ export default function SalesVoucherPage() {
   const [error, setError] = useState("");
   const [vouchers, setVouchers] = useState([]);
 
-  // Form state
   const [formData, setFormData] = useState({
     customer_id: "",
     payment_type: "credit",
@@ -34,7 +33,6 @@ export default function SalesVoucherPage() {
 
   const fetchData = async (companyId) => {
     try {
-      // Fetch customers, items, vouchers
       const [custRes, itemRes, voucherRes] = await Promise.all([
         api.get("/customers", { headers: { "company-id": companyId } }),
         api.get("/items", { headers: { "company-id": companyId } }),
@@ -48,7 +46,6 @@ export default function SalesVoucherPage() {
     }
   };
 
-  // Add new item row
   const addItemRow = () => {
     setFormData({
       ...formData,
@@ -56,13 +53,11 @@ export default function SalesVoucherPage() {
     });
   };
 
-  // Remove item row
   const removeItemRow = (index) => {
     const newItems = formData.items.filter((_, i) => i !== index);
     setFormData({ ...formData, items: newItems });
   };
 
-  // Handle item change
   const handleItemChange = (index, field, value) => {
     const newItems = [...formData.items];
     newItems[index][field] = value;
@@ -79,7 +74,6 @@ export default function SalesVoucherPage() {
     setFormData({ ...formData, items: newItems });
   };
 
-  // Calculate total
   const calculateTotal = () => {
     return formData.items.reduce((total, item) => {
       const itemTotal = item.quantity * item.rate;
@@ -88,7 +82,6 @@ export default function SalesVoucherPage() {
     }, 0);
   };
 
-  // Handle form submit
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -99,7 +92,6 @@ export default function SalesVoucherPage() {
         headers: { "company-id": companyId },
       });
 
-      // Reset form
       setFormData({
         customer_id: "",
         payment_type: "credit",
@@ -107,12 +99,39 @@ export default function SalesVoucherPage() {
         items: [{ item_id: "", quantity: 1, rate: "", gst_percent: 18 }],
       });
 
-      // Refresh data
       fetchData(companyId);
     } catch (err) {
       setError(err.response?.data?.message || "Something went wrong");
     } finally {
       setLoading(false);
+    }
+  };
+
+  // Download invoice PDF
+  const downloadInvoice = async (voucherId, invoiceNo) => {
+    try {
+      const company = JSON.parse(localStorage.getItem("selectedCompany"));
+      const token = localStorage.getItem("token");
+
+      const response = await fetch(
+        `http://localhost:5000/api/invoice/${voucherId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "company-id": company.id,
+          },
+        }
+      );
+
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `invoice-${invoiceNo}.pdf`;
+      a.click();
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error(err);
     }
   };
 
@@ -125,7 +144,6 @@ export default function SalesVoucherPage() {
         <h3 className="text-lg font-semibold mb-4">Create Sales Voucher</h3>
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          {/* Customer + Date + Payment Type */}
           <div className="grid grid-cols-3 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Customer</label>
@@ -292,6 +310,7 @@ export default function SalesVoucherPage() {
                 <th className="px-4 py-3 text-left text-sm font-medium text-gray-600">Date</th>
                 <th className="px-4 py-3 text-left text-sm font-medium text-gray-600">Amount</th>
                 <th className="px-4 py-3 text-left text-sm font-medium text-gray-600">Payment</th>
+                <th className="px-4 py-3 text-left text-sm font-medium text-gray-600">Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -309,6 +328,14 @@ export default function SalesVoucherPage() {
                     }`}>
                       {voucher.payment_type}
                     </span>
+                  </td>
+                  <td className="px-4 py-3 text-sm">
+                    <button
+                      onClick={() => downloadInvoice(voucher.id, voucher.invoice_no)}
+                      className="bg-blue-600 text-white px-3 py-1 rounded text-xs hover:bg-blue-700"
+                    >
+                      Download PDF
+                    </button>
                   </td>
                 </tr>
               ))}

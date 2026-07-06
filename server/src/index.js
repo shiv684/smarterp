@@ -11,6 +11,7 @@ const itemRoutes = require("./routes/item.routes");
 const salesRoutes = require("./routes/sales.routes");
 const purchaseRoutes = require("./routes/purchase.routes");
 const reportsRoutes = require("./routes/reports.routes");
+const invoiceRoutes = require("./routes/invoice.routes");
 
 const app = express();
 
@@ -25,6 +26,7 @@ app.use("/api/items", itemRoutes);
 app.use("/api/sales", salesRoutes);
 app.use("/api/purchases", purchaseRoutes);
 app.use("/api/reports", reportsRoutes);
+app.use("/api/invoice", invoiceRoutes);
 
 app.get("/", (req, res) => {
   res.json({ message: "SmartERP Server Running ✅" });
