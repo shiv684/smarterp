@@ -16,7 +16,13 @@ const companyUsersRoutes = require("./routes/companyUsers.routes");
 
 const app = express();
 
-app.use(cors());
+// CORS — sab origins allow karo deploy ke liye
+app.use(cors({
+  origin: "*",
+  methods: ["GET", "POST", "PUT", "DELETE"],
+  allowedHeaders: ["Content-Type", "Authorization", "company-id"],
+}));
+
 app.use(express.json());
 
 app.use("/api/auth", authRoutes);
@@ -27,7 +33,6 @@ app.use("/api/items", itemRoutes);
 app.use("/api/sales", salesRoutes);
 app.use("/api/purchases", purchaseRoutes);
 app.use("/api/reports", reportsRoutes);
-app.use("/api/invoice", invoiceRoutes);
 app.use("/api/invoice", invoiceRoutes);
 app.use("/api/company-users", companyUsersRoutes);
 
