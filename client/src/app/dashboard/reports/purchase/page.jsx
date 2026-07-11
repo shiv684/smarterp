@@ -33,6 +33,34 @@ export default function PurchaseReportPage() {
     }
   };
 
+  // Download purchase invoice PDF
+  const downloadPurchaseInvoice = async (purchaseId) => {
+    try {
+      const company = JSON.parse(localStorage.getItem("selectedCompany"));
+      const token = localStorage.getItem("token");
+
+      const response = await fetch(
+        `https://smarterp-backend-1dqy.onrender.com/api/invoice/purchase/${purchaseId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "company-id": company.id,
+          },
+        }
+      );
+
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `purchase-${purchaseId}.pdf`;
+      a.click();
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   return (
     <DashboardLayout>
       <h2 className="text-2xl font-bold mb-6">Purchase Report</h2>
@@ -62,7 +90,7 @@ export default function PurchaseReportPage() {
             <div key={index} className="bg-white rounded shadow overflow-hidden">
               {/* Voucher Header */}
               <div className="px-4 py-3 bg-gray-50 border-b flex justify-between items-center">
-                <div className="flex gap-6">
+                <div className="flex gap-6 flex-wrap">
                   <span className="text-sm font-bold text-gray-700">#{index + 1}</span>
                   <span className="text-sm text-gray-600">🏭 {purchase.supplier_name}</span>
                   <span className="text-sm text-gray-600">📅 {new Date(purchase.date).toLocaleDateString()}</span>
@@ -74,7 +102,15 @@ export default function PurchaseReportPage() {
                     {purchase.payment_type}
                   </span>
                 </div>
-                <span className="text-sm font-bold text-gray-800">₹{purchase.total_amount}</span>
+                <div className="flex items-center gap-4">
+                  <span className="text-sm font-bold text-gray-800">₹{purchase.total_amount}</span>
+                  <button
+                    onClick={() => downloadPurchaseInvoice(purchase.id)}
+                    className="bg-red-600 text-white px-3 py-1 rounded text-xs hover:bg-red-700"
+                  >
+                    Download PDF
+                  </button>
+                </div>
               </div>
 
               {/* Items Table */}

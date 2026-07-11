@@ -52,8 +52,8 @@ export default function PurchaseVoucherPage() {
       const company = JSON.parse(localStorage.getItem("selectedCompany"));
       const token = localStorage.getItem("token");
 
-      const response = await fetch(
-        `http://localhost:5000/api/invoice/purchase/${purchaseId}`,
+    const response = await fetch(
+  `https://smarterp-backend-1dqy.onrender.com/api/invoice/purchase/${purchaseId}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,

@@ -42,7 +42,7 @@ export default function SalesReportPage() {
       const token = localStorage.getItem("token");
 
       const response = await fetch(
-        `http://localhost:5000/api/invoice/sales/${saleId}`,
+  `https://smarterp-backend-1dqy.onrender.com/api/invoice/sales/${saleId}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,

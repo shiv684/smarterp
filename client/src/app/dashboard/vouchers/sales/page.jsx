@@ -113,7 +113,7 @@ export default function SalesVoucherPage() {
       const token = localStorage.getItem("token");
 
       const response = await fetch(
-        `http://localhost:5000/api/invoice/sales/${voucherId}`,
+  `https://smarterp-backend-1dqy.onrender.com/api/invoice/sales/${voucherId}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
