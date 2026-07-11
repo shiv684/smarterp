@@ -22,21 +22,40 @@ export default function Navbar() {
   };
 
   return (
-    <nav className="bg-white shadow px-6 py-3 flex justify-between items-center">
-      <div>
+    <nav className="bg-white shadow-sm px-6 py-3 flex justify-between items-center border-b border-gray-200">
+      {/* Company Name */}
+      <div className="flex items-center gap-3">
         {company ? (
-          <span className="text-sm font-medium text-gray-700">
-            📊 {company.name}
-          </span>
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
+              <span className="text-white text-xs font-bold">
+                {company.name.charAt(0).toUpperCase()}
+              </span>
+            </div>
+            <div>
+              <p className="text-sm font-semibold text-gray-800">{company.name}</p>
+              <p className="text-xs text-gray-400">Active Company</p>
+            </div>
+          </div>
         ) : (
-          <span className="text-sm text-yellow-500">⚠️ No company selected</span>
+          <span
+            onClick={() => router.push("/dashboard/companies")}
+            className="text-sm text-yellow-600 cursor-pointer hover:underline"
+          >
+            ⚠️ Select a company
+          </span>
         )}
       </div>
+
+      {/* User + Logout */}
       <div className="flex items-center gap-4">
-        <span className="text-sm text-gray-600">👤 {user?.name}</span>
+        <div className="text-right">
+          <p className="text-sm font-medium text-gray-700">{user?.name}</p>
+          <p className="text-xs text-gray-400">{user?.email}</p>
+        </div>
         <button
           onClick={handleLogout}
-          className="bg-red-500 text-white px-3 py-1 rounded text-sm hover:bg-red-600"
+          className="bg-red-500 text-white px-4 py-2 rounded-lg text-sm hover:bg-red-600 transition-all font-medium"
         >
           Logout
         </button>

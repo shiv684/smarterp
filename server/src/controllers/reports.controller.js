@@ -35,12 +35,16 @@ const getStockSummary = async (req, res) => {
 };
 
 // Sales Report
+
+
+// Sales Report with items
 const getSalesReport = async (req, res) => {
   try {
     const company_id = req.headers["company-id"];
 
     const sales = await pool.query(
       `SELECT 
+        sv.id,
         sv.invoice_no,
         c.name as customer_name,
         sv.total_amount,
@@ -54,7 +58,20 @@ const getSalesReport = async (req, res) => {
       [company_id]
     );
 
-    // Calculate totals
+    // Get items for each voucher
+    const salesWithItems = await Promise.all(
+      sales.rows.map(async (sale) => {
+        const items = await pool.query(
+          `SELECT si.quantity, si.rate, si.total, i.name as item_name, i.unit
+           FROM sales_items si
+           LEFT JOIN items i ON si.item_id = i.id
+           WHERE si.sales_voucher_id = $1`,
+          [sale.id]
+        );
+        return { ...sale, items: items.rows };
+      })
+    );
+
     const totalSales = sales.rows.reduce(
       (sum, s) => sum + parseFloat(s.total_amount), 0
     );
@@ -64,7 +81,7 @@ const getSalesReport = async (req, res) => {
 
     res.status(200).json({
       message: "Sales report fetched successfully ✅",
-      sales: sales.rows,
+      sales: salesWithItems,
       totalSales,
       totalGst,
     });
@@ -74,7 +91,7 @@ const getSalesReport = async (req, res) => {
   }
 };
 
-// Purchase Report
+// Purchase Report with items
 const getPurchaseReport = async (req, res) => {
   try {
     const company_id = req.headers["company-id"];
@@ -93,14 +110,27 @@ const getPurchaseReport = async (req, res) => {
       [company_id]
     );
 
-    // Calculate total purchases
+    // Get items for each voucher
+    const purchasesWithItems = await Promise.all(
+      purchases.rows.map(async (purchase) => {
+        const items = await pool.query(
+          `SELECT pi.quantity, pi.rate, pi.total, i.name as item_name, i.unit
+           FROM purchase_items pi
+           LEFT JOIN items i ON pi.item_id = i.id
+           WHERE pi.purchase_voucher_id = $1`,
+          [purchase.id]
+        );
+        return { ...purchase, items: items.rows };
+      })
+    );
+
     const totalPurchases = purchases.rows.reduce(
       (sum, p) => sum + parseFloat(p.total_amount), 0
     );
 
     res.status(200).json({
       message: "Purchase report fetched successfully ✅",
-      purchases: purchases.rows,
+      purchases: purchasesWithItems,
       totalPurchases,
     });
 
@@ -108,7 +138,6 @@ const getPurchaseReport = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
-
 // Dashboard Summary
 const getDashboardSummary = async (req, res) => {
   try {

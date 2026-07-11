@@ -1,12 +1,11 @@
 const express = require("express");
 const router = express.Router();
-const protect = require("../middleware/auth.middleware");
+const { protect, checkCompanyAccess } = require("../middleware/auth.middleware");
 const { createCustomer, getCustomers, updateCustomer, deleteCustomer } = require("../controllers/customer.controller");
 
-// All routes are protected - Login required
-router.post("/", protect, createCustomer);
-router.get("/", protect, getCustomers);
-router.put("/:id", protect, updateCustomer);
-router.delete("/:id", protect, deleteCustomer);
+router.post("/", protect, checkCompanyAccess, createCustomer);
+router.get("/", protect, checkCompanyAccess, getCustomers);
+router.put("/:id", protect, checkCompanyAccess, updateCustomer);
+router.delete("/:id", protect, checkCompanyAccess, deleteCustomer);
 
 module.exports = router;

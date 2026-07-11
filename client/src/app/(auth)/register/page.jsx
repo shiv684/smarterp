@@ -9,25 +9,18 @@ export default function RegisterPage() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  // Handle input change
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  // Handle form submit
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     setError("");
-
     try {
       const res = await api.post("/auth/register", formData);
-
-      // Save token and user in localStorage
       localStorage.setItem("token", res.data.token);
       localStorage.setItem("user", JSON.stringify(res.data.user));
-
-      // Redirect to dashboard
       router.push("/dashboard");
     } catch (err) {
       setError(err.response?.data?.message || "Something went wrong");
@@ -37,20 +30,20 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-md">
-        {/* Header */}
-        <h1 className="text-2xl font-bold text-center text-blue-600 mb-2">
-          SmartERP
-        </h1>
-        <p className="text-center text-gray-500 mb-6">Create your account</p>
+    <div className="min-h-screen flex items-center justify-center p-8"
+      style={{ background: "linear-gradient(135deg, #1e3a5f 0%, #0f2440 50%, #1a1a2e 100%)" }}
+    >
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-8">
+        <div className="text-center mb-8">
+          <h1 className="text-3xl font-bold text-gray-800">
+            Smart<span className="text-blue-600">ERP</span>
+          </h1>
+          <p className="text-gray-500 mt-2">Create your account</p>
+        </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          {/* Name Field */}
+        <form onSubmit={handleSubmit} className="space-y-5">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Name
-            </label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
             <input
               name="name"
               type="text"
@@ -58,15 +51,12 @@ export default function RegisterPage() {
               value={formData.name}
               onChange={handleChange}
               required
-              className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50"
             />
           </div>
 
-          {/* Email Field */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Email
-            </label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
             <input
               name="email"
               type="email"
@@ -74,15 +64,12 @@ export default function RegisterPage() {
               value={formData.email}
               onChange={handleChange}
               required
-              className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50"
             />
           </div>
 
-          {/* Password Field */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Password
-            </label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
             <input
               name="password"
               type="password"
@@ -90,28 +77,28 @@ export default function RegisterPage() {
               value={formData.password}
               onChange={handleChange}
               required
-              className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50"
             />
           </div>
 
-          {/* Error Message */}
           {error && (
-            <p className="text-red-500 text-sm">{error}</p>
+            <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-xl text-sm">
+              {error}
+            </div>
           )}
 
-          {/* Submit Button */}
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 disabled:opacity-50"
+            className="w-full py-3 rounded-xl font-semibold text-white transition-all disabled:opacity-50"
+            style={{ background: "linear-gradient(135deg, #1e3a5f, #2563eb)" }}
           >
-            {loading ? "Registering..." : "Register"}
+            {loading ? "Registering..." : "Register →"}
           </button>
 
-          {/* Login Link */}
           <p className="text-center text-sm text-gray-500">
             Already account hai?{" "}
-            <a href="/login" className="text-blue-500 hover:underline">
+            <a href="/login" className="text-blue-600 font-medium hover:underline">
               Login karo
             </a>
           </p>

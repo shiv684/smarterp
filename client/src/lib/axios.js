@@ -13,4 +13,18 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
+// If 401 error - logout automatically
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401) {
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
+      localStorage.removeItem("selectedCompany");
+      window.location.href = "/login";
+    }
+    return Promise.reject(error);
+  }
+);
+
 export default api;

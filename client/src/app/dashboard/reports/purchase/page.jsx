@@ -57,37 +57,58 @@ export default function PurchaseReportPage() {
           No purchases found!
         </div>
       ) : (
-        <div className="bg-white rounded shadow overflow-hidden">
-          <table className="w-full">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-4 py-3 text-left text-sm font-medium text-gray-600">#</th>
-                <th className="px-4 py-3 text-left text-sm font-medium text-gray-600">Supplier</th>
-                <th className="px-4 py-3 text-left text-sm font-medium text-gray-600">Date</th>
-                <th className="px-4 py-3 text-left text-sm font-medium text-gray-600">Amount</th>
-                <th className="px-4 py-3 text-left text-sm font-medium text-gray-600">Payment</th>
-              </tr>
-            </thead>
-            <tbody>
-              {purchases.map((purchase, index) => (
-                <tr key={purchase.id} className="border-t hover:bg-gray-50">
-                  <td className="px-4 py-3 text-sm">{index + 1}</td>
-                  <td className="px-4 py-3 text-sm">{purchase.supplier_name}</td>
-                  <td className="px-4 py-3 text-sm">{new Date(purchase.date).toLocaleDateString()}</td>
-                  <td className="px-4 py-3 text-sm font-medium">₹{purchase.total_amount}</td>
-                  <td className="px-4 py-3 text-sm">
-                    <span className={`px-2 py-1 rounded text-xs ${
-                      purchase.payment_type === "cash"
-                        ? "bg-green-100 text-green-700"
-                        : "bg-yellow-100 text-yellow-700"
-                    }`}>
-                      {purchase.payment_type}
-                    </span>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+        <div className="space-y-4">
+          {purchases.map((purchase, index) => (
+            <div key={index} className="bg-white rounded shadow overflow-hidden">
+              {/* Voucher Header */}
+              <div className="px-4 py-3 bg-gray-50 border-b flex justify-between items-center">
+                <div className="flex gap-6">
+                  <span className="text-sm font-bold text-gray-700">#{index + 1}</span>
+                  <span className="text-sm text-gray-600">🏭 {purchase.supplier_name}</span>
+                  <span className="text-sm text-gray-600">📅 {new Date(purchase.date).toLocaleDateString()}</span>
+                  <span className={`px-2 py-0.5 rounded text-xs ${
+                    purchase.payment_type === "cash"
+                      ? "bg-green-100 text-green-700"
+                      : "bg-yellow-100 text-yellow-700"
+                  }`}>
+                    {purchase.payment_type}
+                  </span>
+                </div>
+                <span className="text-sm font-bold text-gray-800">₹{purchase.total_amount}</span>
+              </div>
+
+              {/* Items Table */}
+              <table className="w-full">
+                <thead className="bg-red-50">
+                  <tr>
+                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500">#</th>
+                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500">Item</th>
+                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500">Qty</th>
+                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500">Rate</th>
+                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500">Total</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {purchase.items.map((item, idx) => (
+                    <tr key={idx} className="border-t">
+                      <td className="px-4 py-2 text-sm">{idx + 1}</td>
+                      <td className="px-4 py-2 text-sm font-medium">{item.item_name}</td>
+                      <td className="px-4 py-2 text-sm">{item.quantity} {item.unit}</td>
+                      <td className="px-4 py-2 text-sm">₹{item.rate}</td>
+                      <td className="px-4 py-2 text-sm font-medium">₹{item.total}</td>
+                    </tr>
+                  ))}
+                </tbody>
+                <tfoot className="bg-gray-50">
+                  <tr>
+                    <td colSpan={3} className="px-4 py-2"></td>
+                    <td className="px-4 py-2 text-right text-xs font-semibold text-gray-700">Grand Total:</td>
+                    <td className="px-4 py-2 text-sm font-bold text-red-600">₹{purchase.total_amount}</td>
+                  </tr>
+                </tfoot>
+              </table>
+            </div>
+          ))}
         </div>
       )}
     </DashboardLayout>

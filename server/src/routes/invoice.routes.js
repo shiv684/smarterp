@@ -1,9 +1,9 @@
 const express = require("express");
 const router = express.Router();
-const protect = require("../middleware/auth.middleware");
-const { generateInvoice } = require("../controllers/invoice.controller");
+const { protect, checkCompanyAccess } = require("../middleware/auth.middleware");
+const { generateInvoice, generatePurchaseInvoice } = require("../controllers/invoice.controller");
 
-// Generate invoice PDF
-router.get("/:id", protect, generateInvoice);
+router.get("/sales/:id", protect, checkCompanyAccess, generateInvoice);
+router.get("/purchase/:id", protect, checkCompanyAccess, generatePurchaseInvoice);
 
 module.exports = router;

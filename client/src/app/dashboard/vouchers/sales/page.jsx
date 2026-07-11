@@ -62,7 +62,6 @@ export default function SalesVoucherPage() {
     const newItems = [...formData.items];
     newItems[index][field] = value;
 
-    // Auto fill rate from item master
     if (field === "item_id") {
       const selectedItem = items.find((i) => i.id === parseInt(value));
       if (selectedItem) {
@@ -114,7 +113,7 @@ export default function SalesVoucherPage() {
       const token = localStorage.getItem("token");
 
       const response = await fetch(
-        `http://localhost:5000/api/invoice/${voucherId}`,
+        `http://localhost:5000/api/invoice/sales/${voucherId}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,

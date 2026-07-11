@@ -12,6 +12,7 @@ const salesRoutes = require("./routes/sales.routes");
 const purchaseRoutes = require("./routes/purchase.routes");
 const reportsRoutes = require("./routes/reports.routes");
 const invoiceRoutes = require("./routes/invoice.routes");
+const companyUsersRoutes = require("./routes/companyUsers.routes");
 
 const app = express();
 
@@ -27,6 +28,8 @@ app.use("/api/sales", salesRoutes);
 app.use("/api/purchases", purchaseRoutes);
 app.use("/api/reports", reportsRoutes);
 app.use("/api/invoice", invoiceRoutes);
+app.use("/api/invoice", invoiceRoutes);
+app.use("/api/company-users", companyUsersRoutes);
 
 app.get("/", (req, res) => {
   res.json({ message: "SmartERP Server Running ✅" });

@@ -46,6 +46,34 @@ export default function PurchaseVoucherPage() {
     }
   };
 
+  // Download purchase invoice PDF
+  const downloadPurchaseInvoice = async (purchaseId) => {
+    try {
+      const company = JSON.parse(localStorage.getItem("selectedCompany"));
+      const token = localStorage.getItem("token");
+
+      const response = await fetch(
+        `http://localhost:5000/api/invoice/purchase/${purchaseId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "company-id": company.id,
+          },
+        }
+      );
+
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `purchase-${purchaseId}.pdf`;
+      a.click();
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   const addItemRow = () => {
     setFormData({
       ...formData,
@@ -62,7 +90,6 @@ export default function PurchaseVoucherPage() {
     const newItems = [...formData.items];
     newItems[index][field] = value;
 
-    // Auto fill purchase rate
     if (field === "item_id") {
       const selectedItem = items.find((i) => i.id === parseInt(value));
       if (selectedItem) {
@@ -270,6 +297,7 @@ export default function PurchaseVoucherPage() {
                 <th className="px-4 py-3 text-left text-sm font-medium text-gray-600">Date</th>
                 <th className="px-4 py-3 text-left text-sm font-medium text-gray-600">Amount</th>
                 <th className="px-4 py-3 text-left text-sm font-medium text-gray-600">Payment</th>
+                <th className="px-4 py-3 text-left text-sm font-medium text-gray-600">Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -287,6 +315,14 @@ export default function PurchaseVoucherPage() {
                     }`}>
                       {voucher.payment_type}
                     </span>
+                  </td>
+                  <td className="px-4 py-3 text-sm">
+                    <button
+                      onClick={() => downloadPurchaseInvoice(voucher.id)}
+                      className="bg-red-600 text-white px-3 py-1 rounded text-xs hover:bg-red-700"
+                    >
+                      Download PDF
+                    </button>
                   </td>
                 </tr>
               ))}

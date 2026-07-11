@@ -4,7 +4,7 @@ const pool = require("../config/db");
 const createCompany = async (req, res) => {
   try {
     const { name, gst_number, address, state, financial_year } = req.body;
-    const user_id = req.user.id; // Get user id from JWT token
+    const user_id = req.user.id;
 
     // Check if user already has 5 companies
     const companyCount = await pool.query(
@@ -33,19 +33,41 @@ const createCompany = async (req, res) => {
 };
 
 // Get all companies of logged in user
+// Get all companies of logged in user
 const getCompanies = async (req, res) => {
   try {
-    const user_id = req.user.id; // Get user id from JWT token
+    const user_id = req.user.id;
 
-    // Fetch all companies of this user
-    const companies = await pool.query(
-      "SELECT * FROM companies WHERE user_id = $1 ORDER BY created_at DESC",
+    // Owner ki companies
+    const ownedCompanies = await pool.query(
+      "SELECT *, 'owner' as access_role FROM companies WHERE user_id = $1",
       [user_id]
+    );
+
+    // Employee ki assigned companies
+    const assignedCompanies = await pool.query(
+      `SELECT c.*, cu.role as access_role 
+       FROM companies c
+       LEFT JOIN company_users cu ON c.id = cu.company_id
+       WHERE cu.user_id = $1`,
+      [user_id]
+    );
+
+    // Dono merge karo
+    const allCompanies = [
+      ...ownedCompanies.rows,
+      ...assignedCompanies.rows,
+    ];
+
+    // Duplicates remove karo
+    const uniqueCompanies = allCompanies.filter(
+      (company, index, self) =>
+        index === self.findIndex((c) => c.id === company.id)
     );
 
     res.status(200).json({
       message: "Companies fetched successfully ✅",
-      companies: companies.rows,
+      companies: uniqueCompanies,
     });
 
   } catch (error) {
@@ -56,9 +78,9 @@ const getCompanies = async (req, res) => {
 // Update company
 const updateCompany = async (req, res) => {
   try {
-    const { id } = req.params; // Get company id from URL
+    const { id } = req.params;
     const { name, gst_number, address, state, financial_year } = req.body;
-    const user_id = req.user.id; // Get user id from JWT token
+    const user_id = req.user.id;
 
     // Check if company belongs to this user
     const company = await pool.query(
@@ -86,14 +108,15 @@ const updateCompany = async (req, res) => {
   }
 };
 
-// Delete company
+// Delete company with all related data
 const deleteCompany = async (req, res) => {
+  const client = await pool.connect();
   try {
-    const { id } = req.params; // Get company id from URL
-    const user_id = req.user.id; // Get user id from JWT token
+    const { id } = req.params;
+    const user_id = req.user.id;
 
     // Check if company belongs to this user
-    const company = await pool.query(
+    const company = await client.query(
       "SELECT * FROM companies WHERE id = $1 AND user_id = $2",
       [id, user_id]
     );
@@ -102,18 +125,51 @@ const deleteCompany = async (req, res) => {
       return res.status(404).json({ message: "Company not found" });
     }
 
-    // Delete company from database
-    await pool.query(
+    await client.query("BEGIN");
+
+    // Delete all related data first
+    await client.query(
+      "DELETE FROM sales_items WHERE sales_voucher_id IN (SELECT id FROM sales_vouchers WHERE company_id = $1)",
+      [id]
+    );
+    await client.query(
+      "DELETE FROM sales_vouchers WHERE company_id = $1",
+      [id]
+    );
+    await client.query(
+      "DELETE FROM purchase_items WHERE purchase_voucher_id IN (SELECT id FROM purchase_vouchers WHERE company_id = $1)",
+      [id]
+    );
+    await client.query(
+      "DELETE FROM purchase_vouchers WHERE company_id = $1",
+      [id]
+    );
+    await client.query(
+      "DELETE FROM customers WHERE company_id = $1",
+      [id]
+    );
+    await client.query(
+      "DELETE FROM suppliers WHERE company_id = $1",
+      [id]
+    );
+    await client.query(
+      "DELETE FROM items WHERE company_id = $1",
+      [id]
+    );
+    await client.query(
       "DELETE FROM companies WHERE id = $1",
       [id]
     );
 
-    res.status(200).json({
-      message: "Company deleted successfully ✅",
-    });
+    await client.query("COMMIT");
+
+    res.status(200).json({ message: "Company deleted successfully ✅" });
 
   } catch (error) {
+    await client.query("ROLLBACK");
     res.status(500).json({ message: error.message });
+  } finally {
+    client.release();
   }
 };
 

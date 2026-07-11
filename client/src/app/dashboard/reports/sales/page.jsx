@@ -35,6 +35,34 @@ export default function SalesReportPage() {
     }
   };
 
+  // Download sales invoice PDF
+  const downloadInvoice = async (saleId, invoiceNo) => {
+    try {
+      const company = JSON.parse(localStorage.getItem("selectedCompany"));
+      const token = localStorage.getItem("token");
+
+      const response = await fetch(
+        `http://localhost:5000/api/invoice/sales/${saleId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "company-id": company.id,
+          },
+        }
+      );
+
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `invoice-${invoiceNo}.pdf`;
+      a.click();
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   return (
     <DashboardLayout>
       <h2 className="text-2xl font-bold mb-6">Sales Report</h2>
@@ -63,106 +91,76 @@ export default function SalesReportPage() {
           No sales found!
         </div>
       ) : (
-        <div className="bg-white rounded shadow overflow-hidden">
-          <table className="w-full">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-4 py-3 text-left text-sm font-medium text-gray-600">Invoice No</th>
-                <th className="px-4 py-3 text-left text-sm font-medium text-gray-600">Customer</th>
-                <th className="px-4 py-3 text-left text-sm font-medium text-gray-600">Date</th>
-                <th className="px-4 py-3 text-left text-sm font-medium text-gray-600">Amount</th>
-                <th className="px-4 py-3 text-left text-sm font-medium text-gray-600">GST</th>
-                <th className="px-4 py-3 text-left text-sm font-medium text-gray-600">Payment</th>
-              </tr>
-            </thead>
-            <tbody>
-              {sales.map((sale) => (
-                <tr key={sale.invoice_no} className="border-t hover:bg-gray-50">
-                  <td className="px-4 py-3 text-sm font-medium text-blue-600">{sale.invoice_no}</td>
-                  <td className="px-4 py-3 text-sm">{sale.customer_name}</td>
-                  <td className="px-4 py-3 text-sm">{new Date(sale.date).toLocaleDateString()}</td>
-                  <td className="px-4 py-3 text-sm font-medium">₹{sale.total_amount}</td>
-                  <td className="px-4 py-3 text-sm">₹{sale.gst_amount}</td>
-                  <td className="px-4 py-3 text-sm">
-                    <span className={`px-2 py-1 rounded text-xs ${
-                      sale.payment_type === "cash"
-                        ? "bg-green-100 text-green-700"
-                        : "bg-yellow-100 text-yellow-700"
-                    }`}>
-                      {sale.payment_type}
-                    </span>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-            <thead className="bg-gray-50">
-  <tr>
-    <th className="px-4 py-3 text-left text-sm font-medium text-gray-600">Invoice No</th>
-    <th className="px-4 py-3 text-left text-sm font-medium text-gray-600">Customer</th>
-    <th className="px-4 py-3 text-left text-sm font-medium text-gray-600">Date</th>
-    <th className="px-4 py-3 text-left text-sm font-medium text-gray-600">Amount</th>
-    <th className="px-4 py-3 text-left text-sm font-medium text-gray-600">Payment</th>
-    <th className="px-4 py-3 text-left text-sm font-medium text-gray-600">Actions</th>
-  </tr>
-</thead>
-<tbody>
-  {vouchers.map((voucher) => (
-    <tr key={voucher.id} className="border-t hover:bg-gray-50">
-      <td className="px-4 py-3 text-sm font-medium text-blue-600">{voucher.invoice_no}</td>
-      <td className="px-4 py-3 text-sm">{voucher.customer_name}</td>
-      <td className="px-4 py-3 text-sm">{new Date(voucher.date).toLocaleDateString()}</td>
-      <td className="px-4 py-3 text-sm font-medium">₹{voucher.total_amount}</td>
-      <td className="px-4 py-3 text-sm">
-        <span className={`px-2 py-1 rounded text-xs ${
-          voucher.payment_type === "cash"
-            ? "bg-green-100 text-green-700"
-            : "bg-yellow-100 text-yellow-700"
-        }`}>
-          {voucher.payment_type}
-        </span>
-      </td>
-      <td className="px-4 py-3 text-sm">
-        <button
-          onClick={() => downloadInvoice(voucher.id)}
-          className="bg-blue-600 text-white px-3 py-1 rounded text-xs hover:bg-blue-700"
-        >
-          Download PDF
-        </button>
-      </td>
-    </tr>
-  ))}
-</tbody>
-          </table>
+        <div className="space-y-4">
+          {sales.map((sale) => (
+            <div key={sale.invoice_no} className="bg-white rounded shadow overflow-hidden">
+
+              {/* Voucher Header */}
+              <div className="px-4 py-3 bg-gray-50 border-b flex justify-between items-center">
+                <div className="flex gap-6 flex-wrap">
+                  <span className="text-sm font-bold text-blue-600">{sale.invoice_no}</span>
+                  <span className="text-sm text-gray-600">👤 {sale.customer_name}</span>
+                  <span className="text-sm text-gray-600">📅 {new Date(sale.date).toLocaleDateString()}</span>
+                  <span className={`px-2 py-0.5 rounded text-xs ${
+                    sale.payment_type === "cash"
+                      ? "bg-green-100 text-green-700"
+                      : "bg-yellow-100 text-yellow-700"
+                  }`}>
+                    {sale.payment_type}
+                  </span>
+                </div>
+                <div className="flex items-center gap-4">
+                  <span className="text-sm font-bold text-gray-800">₹{sale.total_amount}</span>
+                  <button
+                    onClick={() => downloadInvoice(sale.id, sale.invoice_no)}
+                    className="bg-blue-600 text-white px-3 py-1 rounded text-xs hover:bg-blue-700"
+                  >
+                    Download PDF
+                  </button>
+                </div>
+              </div>
+
+              {/* Items Table */}
+              <table className="w-full">
+                <thead className="bg-blue-50">
+                  <tr>
+                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500">#</th>
+                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500">Item</th>
+                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500">Qty</th>
+                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500">Rate</th>
+                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500">Total</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {sale.items.map((item, index) => (
+                    <tr key={index} className="border-t">
+                      <td className="px-4 py-2 text-sm">{index + 1}</td>
+                      <td className="px-4 py-2 text-sm font-medium">{item.item_name}</td>
+                      <td className="px-4 py-2 text-sm">{item.quantity} {item.unit}</td>
+                      <td className="px-4 py-2 text-sm">₹{item.rate}</td>
+                      <td className="px-4 py-2 text-sm font-medium">₹{item.total}</td>
+                    </tr>
+                  ))}
+                </tbody>
+                <tfoot className="bg-gray-50">
+                  <tr>
+                    <td colSpan={3} className="px-4 py-2 text-right text-xs text-gray-500">
+                      GST: ₹{sale.gst_amount}
+                    </td>
+                    <td className="px-4 py-2 text-right text-xs font-semibold text-gray-700">
+                      Grand Total:
+                    </td>
+                    <td className="px-4 py-2 text-sm font-bold text-blue-600">
+                      ₹{sale.total_amount}
+                    </td>
+                  </tr>
+                </tfoot>
+              </table>
+
+            </div>
+          ))}
         </div>
       )}
     </DashboardLayout>
   );
-  // Download invoice function
-const downloadInvoice = async (voucherId) => {
-  try {
-    const company = JSON.parse(localStorage.getItem("selectedCompany"));
-    const token = localStorage.getItem("token");
-
-    const response = await fetch(
-      `http://localhost:5000/api/invoice/${voucherId}`,
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "company-id": company.id,
-        },
-      }
-    );
-
-    // Convert to blob and download
-    const blob = await response.blob();
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `invoice-${voucherId}.pdf`;
-    a.click();
-    window.URL.revokeObjectURL(url);
-  } catch (err) {
-    console.error(err);
-  }
-};
 }
